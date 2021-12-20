@@ -1,15 +1,27 @@
-pub struct Token {
-    token_type: TokenType,
-    lexme: String,
-    line: u32,
+#[derive(Debug, Clone, Copy)]
+pub struct Pos {
+    pub row: u16,
+    pub col: u16,
 }
 
+#[derive(Debug)]
+pub struct Token {
+    pub token_type: TokenType,
+    pub lexme: String,
+    pub pos: Pos,
+}
+
+#[derive(Copy, Clone, Debug)]
+#[allow(dead_code)]
+#[repr(u8)]
 pub enum TokenType {
     // Single-character tokens.
-    LeftParen = 0,
+    LeftParen = 1,
     RightParen,
     LeftBrace,
     RightBrace,
+    LeftSquare,
+    RightSquare,
     Comma,
     Dot,
     Minus,
@@ -31,7 +43,8 @@ pub enum TokenType {
     // Literals.
     Identifier,
     String,
-    Number,
+    Integer,
+    Float,
 
     // Keywords.
     And,
