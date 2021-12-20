@@ -1,19 +1,54 @@
-#[derive(Debug, Clone, Copy)]
+use phf::phf_map;
+use std::fmt::{Display, Formatter};
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct Pos {
     pub row: u16,
     pub col: u16,
+}
+
+pub struct Range(pub(crate) Pos, pub(crate) Pos);
+
+impl Display for Pos {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "line {}, column {}", self.row, self.col)
+    }
+}
+
+impl Display for Range {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if self.0 == self.1 {
+            write!(f, "{}", self.0)
+        } else if self.0.row == self.1.row {
+            write!(
+                f,
+                "line {} column {}..{}",
+                self.0.row, self.0.col, self.1.col
+            )
+        } else {
+            write!(f, "{} .. {}", self.0, self.1)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum Literal {
+    String(String),
+    Float(f64),
+    Integer(i64),
 }
 
 #[derive(Debug)]
 pub struct Token {
     pub token_type: TokenType,
     pub lexme: String,
-    pub pos: Pos,
+    pub start_pos: Pos,
+    pub end_pos: Pos,
+    pub literal: Option<Literal>,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
 #[allow(dead_code)]
-#[repr(u8)]
 pub enum TokenType {
     // Single-character tokens.
     LeftParen = 1,
@@ -24,11 +59,8 @@ pub enum TokenType {
     RightSquare,
     Comma,
     Dot,
-    Minus,
-    Plus,
+    Colon,
     Semicolon,
-    Slash,
-    Star,
 
     // One or two character tokens.
     Bang,
@@ -39,6 +71,16 @@ pub enum TokenType {
     GreaterEqual,
     Less,
     LessEqual,
+    Minus,
+    MinusEqual,
+    MinusMinus,
+    Plus,
+    PlusEqual,
+    PlusPlus,
+    Slash,
+    SlashEqual,
+    Star,
+    StarEqual,
 
     // Literals.
     Identifier,
@@ -54,7 +96,7 @@ pub enum TokenType {
     Fun,
     For,
     If,
-    Nil,
+    Null,
     Or,
     Return,
     Super,
@@ -65,3 +107,21 @@ pub enum TokenType {
 
     EOF,
 }
+
+pub(crate) static KEYWORDS: phf::Map<&'static str, TokenType> = phf_map! {
+    "and" => TokenType::And,
+    "class" => TokenType::Class,
+    "else" => TokenType::Else,
+    "false" => TokenType::False,
+    "fun" => TokenType::Fun,
+    "for" => TokenType::For,
+    "if" => TokenType::If,
+    "null" => TokenType::Null,
+    "or" => TokenType::Or,
+    "return" => TokenType::Return,
+    "super" => TokenType::Super,
+    "this" => TokenType::This,
+    "true" => TokenType::True,
+    "var" => TokenType::Var,
+    "while" => TokenType::While,
+};
