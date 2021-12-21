@@ -82,7 +82,43 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expression, ParserError> {
-        self.equality()
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Result<Expression, ParserError> {
+        self.or()
+    }
+
+    fn or(&mut self) -> Result<Expression, ParserError> {
+        let mut expr = self.and()?;
+
+        while self.match_single(TokenType::Or) {
+            let operator = self.previous().clone();
+            let right = self.and()?;
+            expr = Expression::Logical {
+                operator,
+                left: Rc::new(expr),
+                right: Rc::new(right),
+            }
+        }
+
+        Ok(expr)
+    }
+
+    fn and(&mut self) -> Result<Expression, ParserError> {
+        let mut expr = self.equality()?;
+
+        while self.match_single(TokenType::And) {
+            let operator = self.previous().clone();
+            let right = self.equality()?;
+            expr = Expression::Logical {
+                operator,
+                left: Rc::new(expr),
+                right: Rc::new(right),
+            }
+        }
+
+        Ok(expr)
     }
 
     fn equality(&mut self) -> Result<Expression, ParserError> {
@@ -125,12 +161,7 @@ impl Parser {
     fn term(&mut self) -> Result<Expression, ParserError> {
         let mut expr = self.factor()?;
 
-        while self.match_any(&[
-            TokenType::Minus,
-            TokenType::MinusEqual,
-            TokenType::Plus,
-            TokenType::PlusEqual,
-        ]) {
+        while self.match_any(&[TokenType::Minus, TokenType::Plus]) {
             let operator = self.previous().clone();
             let right = self.factor()?;
             expr = Expression::Binary {
@@ -146,12 +177,7 @@ impl Parser {
     fn factor(&mut self) -> Result<Expression, ParserError> {
         let mut expr = self.unary()?;
 
-        while self.match_any(&[
-            TokenType::Slash,
-            TokenType::SlashEqual,
-            TokenType::Star,
-            TokenType::StarEqual,
-        ]) {
+        while self.match_any(&[TokenType::Slash, TokenType::Star]) {
             let operator = self.previous().clone();
             let right = self.unary()?;
             expr = Expression::Binary {
@@ -181,53 +207,140 @@ impl Parser {
     fn update(&mut self) -> Result<Expression, ParserError> {
         if self.match_any(&[TokenType::MinusMinus, TokenType::PlusPlus]) {
             let operator = self.previous().clone();
-            let expr = self.primary()?;
-
-            return Ok(Expression::Update {
+            let expr = self.call()?;
+            Ok(Expression::Update {
                 operator,
                 prefix: true,
                 expression: Rc::new(expr),
-            });
-        }
-
-        let expr = self.primary()?;
-
-        if self.match_any(&[TokenType::MinusMinus, TokenType::PlusPlus]) {
-            let operator = self.previous().clone();
-
-            Ok(Expression::Update {
-                operator,
-                prefix: false,
-                expression: Rc::new(expr),
             })
         } else {
-            Ok(expr)
+            let expr = self.call()?;
+            if self.match_any(&[TokenType::MinusMinus, TokenType::PlusPlus]) {
+                let operator = self.previous().clone();
+                Ok(Expression::Update {
+                    operator,
+                    prefix: false,
+                    expression: Rc::new(expr),
+                })
+            } else {
+                Ok(expr)
+            }
         }
     }
 
+    fn call(&mut self) -> Result<Expression, ParserError> {
+        let mut expr = self.primary()?;
+
+        loop {
+            if self.match_single(TokenType::LeftParen) {
+                expr = self.finish_call(expr)?;
+            } else if self.match_single(TokenType::LeftSquare) {
+                expr = self.finish_index(expr)?;
+            } else if self.match_single(TokenType::Dot) {
+                expr = self.finish_member(expr)?;
+            } else {
+                break;
+            }
+        }
+
+        Ok(expr)
+    }
+
+    fn finish_member(&mut self, callee: Expression) -> Result<Expression, ParserError> {
+        let name = self
+            .consume(TokenType::Identifier, "Expect property name after '.'")?
+            .clone();
+        Ok(Expression::Member {
+            object: Rc::new(callee),
+            name,
+        })
+    }
+
+    fn finish_index(&mut self, callee: Expression) -> Result<Expression, ParserError> {
+        let index = self.expression()?;
+        let paren = self
+            .consume(TokenType::RightSquare, "Expect ']' after index")?
+            .clone();
+        Ok(Expression::Index {
+            index: Rc::new(index),
+            object: Rc::new(callee),
+            paren,
+        })
+    }
+
+    fn finish_call(&mut self, callee: Expression) -> Result<Expression, ParserError> {
+        let mut arguments: Vec<Rc<Expression>> = Vec::new();
+
+        if !self.check(TokenType::RightParen) {
+            loop {
+                let argument = self.expression()?;
+
+                arguments.push(Rc::new(argument));
+
+                if !self.match_single(TokenType::Comma) {
+                    break;
+                }
+            }
+        }
+
+        let paren = self
+            .consume(TokenType::RightParen, "Expect ')' after arguments")?
+            .clone();
+        Ok(Expression::Call {
+            callee: Rc::new(callee),
+            arguments,
+            paren,
+        })
+    }
+
     fn primary(&mut self) -> Result<Expression, ParserError> {
+        // "false"
         if self.match_single(TokenType::False) {
             return Ok(Expression::Literal {
                 value: Literal::Boolean(false),
             });
         }
+        // "true"
         if self.match_single(TokenType::True) {
             return Ok(Expression::Literal {
                 value: Literal::Boolean(true),
             });
         }
+        // "null"
         if self.match_single(TokenType::Null) {
             return Ok(Expression::Literal {
                 value: Literal::Null,
             });
         }
 
+        // "this"
+        if self.match_single(TokenType::This) {
+            return Ok(Expression::This {
+                keyword: self.previous().clone(),
+            });
+        }
+        // "super"
+        if self.match_single(TokenType::Super) {
+            return Ok(Expression::Super {
+                keyword: self.previous().clone(),
+            });
+        }
+
+        // NUMBER | STRING
         if self.match_any(&[TokenType::Integer, TokenType::Float, TokenType::String]) {
             return Ok(Expression::Literal {
                 value: self.previous().literal.as_ref().unwrap().clone(),
             });
         }
 
+        // IDENTIFIER
+        if self.match_single(TokenType::Identifier) {
+            return Ok(Expression::Identifier {
+                name: self.previous().clone(),
+            });
+        }
+
+        // "(" expression ")"
         if self.match_single(TokenType::LeftParen) {
             let expr = self.expression()?;
             self.consume(TokenType::RightParen, "Expect ')' after expression")?;
