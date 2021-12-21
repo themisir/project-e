@@ -18,4 +18,9 @@ pub enum Expression {
         operator: Token,
         right: Rc<Expression>,
     },
+    Update {
+        operator: Token,
+        prefix: bool,
+        expression: Rc<Expression>,
+    },
 }

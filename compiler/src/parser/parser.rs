@@ -17,7 +17,13 @@ pub struct ParserError {
 
 impl Display for ParserError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} at {}", self.message, self.token.range())
+        write!(
+            f,
+            "{} at {} token '{}'",
+            self.message,
+            self.token.range(),
+            self.token.lexme
+        )
     }
 }
 
@@ -168,7 +174,34 @@ impl Parser {
                 right: Rc::new(right),
             })
         } else {
-            self.primary()
+            self.update()
+        }
+    }
+
+    fn update(&mut self) -> Result<Expression, ParserError> {
+        if self.match_any(&[TokenType::MinusMinus, TokenType::PlusPlus]) {
+            let operator = self.previous().clone();
+            let expr = self.primary()?;
+
+            return Ok(Expression::Update {
+                operator,
+                prefix: true,
+                expression: Rc::new(expr),
+            });
+        }
+
+        let expr = self.primary()?;
+
+        if self.match_any(&[TokenType::MinusMinus, TokenType::PlusPlus]) {
+            let operator = self.previous().clone();
+
+            Ok(Expression::Update {
+                operator,
+                prefix: false,
+                expression: Rc::new(expr),
+            })
+        } else {
+            Ok(expr)
         }
     }
 

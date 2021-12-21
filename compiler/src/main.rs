@@ -4,6 +4,7 @@ use crate::scanner::token::TokenType;
 
 use std::fs;
 
+mod compiler;
 mod parser;
 mod scanner;
 

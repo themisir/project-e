@@ -5,6 +5,28 @@ use std::fmt::{Display, Formatter};
 pub struct Pos {
     pub row: u16,
     pub col: u16,
+    pub index: u16,
+}
+
+impl Pos {
+    pub(crate) fn initial() -> Pos {
+        Pos {
+            row: 1,
+            col: 1,
+            index: 0,
+        }
+    }
+
+    pub(crate) fn inc_col(&mut self) {
+        self.index += 1;
+        self.col += 1;
+    }
+
+    pub(crate) fn inc_row(&mut self) {
+        self.index += 1;
+        self.col = 0;
+        self.row += 1;
+    }
 }
 
 pub struct Range(pub(crate) Pos, pub(crate) Pos);

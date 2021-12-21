@@ -35,8 +35,8 @@ impl Scanner {
             source,
             start: 0,
             current: 0,
-            start_pos: Pos { col: 1, row: 1 },
-            current_pos: Pos { col: 1, row: 1 },
+            start_pos: Pos::initial(),
+            current_pos: Pos::initial(),
         }
     }
 
@@ -45,6 +45,7 @@ impl Scanner {
         loop {
             let token = self.scan_token()?;
             tokens.push(token.clone());
+
             if token.token_type == TokenType::EOF {
                 break;
             }
@@ -268,13 +269,12 @@ impl Scanner {
 
     fn advance(&mut self) -> char {
         self.current += 1;
-        self.current_pos.col += 1;
+        self.current_pos.inc_col();
         self.source.chars().nth(self.current - 1).unwrap()
     }
 
     fn new_line(&mut self) {
-        self.current_pos.row += 1;
-        self.current_pos.col = 1;
+        self.current_pos.inc_row();
     }
 
     fn matches(&mut self, expected: char) -> bool {
@@ -286,7 +286,7 @@ impl Scanner {
         }
 
         self.current += 1;
-        self.current_pos.col += 1;
+        self.current_pos.inc_col();
 
         true
     }
