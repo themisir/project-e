@@ -31,20 +31,29 @@ impl Display for Range {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum Literal {
-    String(String),
-    Float(f64),
+    Null,
+    Boolean(bool),
     Integer(i64),
+    Float(f64),
+    String(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub token_type: TokenType,
     pub lexme: String,
     pub start_pos: Pos,
     pub end_pos: Pos,
     pub literal: Option<Literal>,
+}
+
+impl Token {
+    pub fn range(&self) -> Range {
+        Range(self.start_pos, self.end_pos)
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]

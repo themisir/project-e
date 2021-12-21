@@ -40,6 +40,18 @@ impl Scanner {
         }
     }
 
+    pub fn scan_all(&mut self) -> Result<Vec<Token>, ScannerError> {
+        let mut tokens = Vec::new();
+        loop {
+            let token = self.scan_token()?;
+            tokens.push(token.clone());
+            if token.token_type == TokenType::EOF {
+                break;
+            }
+        }
+        Ok(tokens)
+    }
+
     pub fn scan_token(&mut self) -> Result<Token, ScannerError> {
         self.skip_whitespace()?;
         self.start = self.current;
