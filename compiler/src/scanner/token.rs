@@ -2,7 +2,6 @@ use crate::scanner::pos::*;
 use phf::phf_map;
 
 #[derive(Debug, Clone)]
-#[allow(dead_code)]
 pub enum Literal {
     Null,
     Boolean(bool),
@@ -72,6 +71,7 @@ pub enum TokenType {
     Class,
     Continue,
     Else,
+    Extends,
     False,
     Fun,
     For,
@@ -94,6 +94,7 @@ pub(crate) static KEYWORDS: phf::Map<&'static str, TokenType> = phf_map! {
     "class" => TokenType::Class,
     "continue" => TokenType::Continue,
     "else" => TokenType::Else,
+    "extends" => TokenType::Extends,
     "false" => TokenType::False,
     "fun" => TokenType::Fun,
     "for" => TokenType::For,

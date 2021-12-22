@@ -7,8 +7,12 @@
     <cargoProject FILE="$PROJECT_DIR$/compiler/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="267a45ed-1a8b-4bc4-a766-3519b63e2962" name="Changes" comment="Implement AST nodes for some statements inc: for, function">
+    <list default="true" id="267a45ed-1a8b-4bc4-a766-3519b63e2962" name="Changes" comment="workspace.xml updated, but I don't know why, who knows ¯\_(ツ)_/¯">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/script.txt" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/script.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/src/parser/ast.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/parser/ast.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/src/parser/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/parser/parser.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/src/scanner/token.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/scanner/token.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,6 +63,7 @@
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
     <property name="settings.editor.selected.configurable" value="org.antlr.intellij.plugin.configdialogs.ANTLRv4ProjectSettings" />
   </component>
@@ -96,7 +101,7 @@
       <updated>1640036990569</updated>
       <workItem from="1640036992811" duration="11945000" />
       <workItem from="1640095301725" duration="22750000" />
-      <workItem from="1640187245360" duration="5797000" />
+      <workItem from="1640187245360" duration="9242000" />
     </task>
     <task id="LOCAL-00001" summary="Implemented simple parser">
       <created>1640093030738</created>
@@ -154,7 +159,14 @@
       <option name="project" value="LOCAL" />
       <updated>1640200600268</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="workspace.xml updated, but I don't know why, who knows ¯\_(ツ)_/¯">
+      <created>1640205306112</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1640205306112</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -180,7 +192,8 @@
     <MESSAGE value="A bunch of minor nits" />
     <MESSAGE value="Create AST nodes for statement and declarations" />
     <MESSAGE value="Implement AST nodes for some statements inc: for, function" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implement AST nodes for some statements inc: for, function" />
+    <MESSAGE value="workspace.xml updated, but I don't know why, who knows ¯\_(ツ)_/¯" />
+    <option name="LAST_COMMIT_MESSAGE" value="workspace.xml updated, but I don't know why, who knows ¯\_(ツ)_/¯" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

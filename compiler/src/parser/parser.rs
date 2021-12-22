@@ -89,7 +89,7 @@ impl Parser {
 
     fn declaration(&mut self) -> Result<Statement, ParserError> {
         /*
-        - [ ] Class
+        - [x] Class
         - [x] Var
         - [x] Function
         - [x] Statement
@@ -101,19 +101,90 @@ impl Parser {
         if self.match_single(TokenType::Fun) {
             return self.function_decl();
         }
+        if self.match_single(TokenType::Class) {
+            return self.class_decl();
+        }
 
         self.statement()
     }
 
+    fn class_decl(&mut self) -> Result<Statement, ParserError> {
+        let name = self
+            .consume(TokenType::Identifier, "Expect class name")?
+            .clone();
+        let extends = if self.match_single(TokenType::Extends) {
+            let extends = self.type_reference()?;
+            Some(extends)
+        } else {
+            None
+        };
+
+        self.consume(TokenType::LeftBrace, "Expect '{' after class name")?;
+
+        let mut members: Vec<ClassMember> = Vec::new();
+
+        while !self.at_end() && !self.check(TokenType::RightBrace) {
+            let name = self
+                .consume(TokenType::Identifier, "Expect member name")?
+                .clone();
+
+            if self.match_single(TokenType::LeftParen) {
+                let parameters = self.parameters()?;
+                let return_type = if self.match_single(TokenType::Colon) {
+                    let return_type = self.type_reference()?;
+                    Some(return_type)
+                } else {
+                    None
+                };
+
+                self.consume(TokenType::LeftBrace, "Expect '{' before function body")?;
+                let body = self.block()?;
+
+                members.push(ClassMember::Method {
+                    name,
+                    parameters,
+                    return_type,
+                    body,
+                })
+            } else {
+                self.consume(TokenType::Colon, "Expect ':' after field name")?;
+                let value_type = self.type_reference()?;
+
+                let value = if self.match_single(TokenType::Equal) {
+                    let value = self.expression()?;
+                    Some(value)
+                } else {
+                    None
+                };
+                self.consume(
+                    TokenType::Semicolon,
+                    "Expect ';' after variable declaration",
+                )?;
+
+                members.push(ClassMember::Field {
+                    name,
+                    value,
+                    value_type,
+                })
+            }
+        }
+        self.consume(TokenType::RightBrace, "Expect '}' after class body")?;
+
+        Ok(Statement::Class {
+            name,
+            extends,
+            members,
+        })
+    }
+
     fn function_decl(&mut self) -> Result<Statement, ParserError> {
         let name = self
-            .consume(TokenType::Identifier, "Expect identifier after 'fun'")?
+            .consume(TokenType::Identifier, "Expect function name")?
             .clone();
 
         self.consume(TokenType::LeftParen, "Expect '(' after function name")?;
-
         let parameters = self.parameters()?;
-        let return_type = if self.check(TokenType::Colon) {
+        let return_type = if self.match_single(TokenType::Colon) {
             let return_type = self.type_reference()?;
             Some(return_type)
         } else {
@@ -121,7 +192,6 @@ impl Parser {
         };
 
         self.consume(TokenType::LeftBrace, "Expect '{' before function body")?;
-
         let body = self.block()?;
 
         Ok(Statement::Function {
@@ -134,17 +204,18 @@ impl Parser {
 
     fn var_decl(&mut self) -> Result<Statement, ParserError> {
         let (name, value_type) = self.typed_var()?;
+
         let value = if self.match_single(TokenType::Equal) {
             let value = self.expression()?;
             Some(value)
         } else {
             None
         };
-
         self.consume(
             TokenType::Semicolon,
             "Expect ';' after variable declaration",
         )?;
+
         Ok(Statement::Var {
             name,
             value_type,
@@ -154,11 +225,10 @@ impl Parser {
 
     fn typed_var(&mut self) -> Result<(Token, TypeReference), ParserError> {
         let name = self
-            .consume(TokenType::Identifier, "Expect identifier after 'var'")?
+            .consume(TokenType::Identifier, "Expect identifier")?
             .clone();
 
-        self.consume(TokenType::Colon, "Expect ':' after variable name")?;
-
+        self.consume(TokenType::Colon, "Expect ':' after identifier")?;
         let type_reference = self.type_reference()?;
 
         Ok((name, type_reference))
@@ -188,9 +258,9 @@ impl Parser {
     fn statement(&mut self) -> Result<Statement, ParserError> {
         /*
         - [x] Block
-        - [ ] If
-        - [ ] For
-        - [ ] While
+        - [x] If
+        - [x] For
+        - [x] While
         - [x] Return
         - [x] Continue
         - [x] Break
@@ -212,8 +282,34 @@ impl Parser {
         if self.match_single(TokenType::Continue) {
             return self.continue_stmt();
         }
+        if self.match_single(TokenType::While) {
+            return self.while_stmt();
+        }
+        if self.match_single(TokenType::If) {
+            return self.if_stmt();
+        }
 
         self.expression_stmt()
+    }
+
+    fn if_stmt(&mut self) -> Result<Statement, ParserError> {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'while'")?;
+        let condition = self.expression()?;
+        self.consume(TokenType::RightParen, "Expect ')' after condition")?;
+
+        let then_branch = self.statement()?;
+        let else_branch = if self.match_single(TokenType::Else) {
+            let stmt = self.statement()?;
+            Some(Rc::new(stmt))
+        } else {
+            None
+        };
+
+        Ok(Statement::If {
+            condition,
+            then_branch: Rc::new(then_branch),
+            else_branch,
+        })
     }
 
     fn block_stmt(&mut self) -> Result<Statement, ParserError> {
@@ -236,10 +332,10 @@ impl Parser {
     fn return_stmt(&mut self) -> Result<Statement, ParserError> {
         let keyword = self.previous().clone();
         let value = if self.check(TokenType::Semicolon) {
+            None
+        } else {
             let value = self.expression()?;
             Some(value)
-        } else {
-            None
         };
 
         self.consume(TokenType::Semicolon, "Expect ';' after return value")?;
@@ -254,6 +350,19 @@ impl Parser {
         }
 
         Ok(Statement::Expression { expression: expr })
+    }
+
+    fn while_stmt(&mut self) -> Result<Statement, ParserError> {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'while'")?;
+        let condition = self.expression()?;
+        self.consume(TokenType::RightParen, "Expect ')' after condition")?;
+
+        let body = self.statement()?;
+
+        Ok(Statement::While {
+            condition,
+            body: Rc::new(body),
+        })
     }
 
     fn for_stmt(&mut self) -> Result<Statement, ParserError> {
@@ -284,6 +393,7 @@ impl Parser {
         };
 
         let body = self.statement()?;
+        self.consume(TokenType::RightParen, "Expect ')' after clauses")?;
 
         Ok(Statement::For {
             initializer,

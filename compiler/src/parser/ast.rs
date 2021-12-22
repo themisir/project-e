@@ -73,14 +73,13 @@ pub enum Statement {
     Break {
         keyword: Token,
     },
-    Continue {
-        keyword: Token,
-    },
     Class {
         name: Token,
-        extends_type: Option<TypeReference>,
-        fields: Vec<ClassField>,
-        methods: Vec<ClassMethod>,
+        extends: Option<TypeReference>,
+        members: Vec<ClassMember>,
+    },
+    Continue {
+        keyword: Token,
     },
     Expression {
         expression: Expression,
@@ -151,18 +150,16 @@ pub struct FunctionParameter {
 }
 
 #[derive(Debug)]
-#[allow(dead_code)]
-pub struct ClassField {
-    pub name: Token,
-    pub value_type: TypeReference,
-    pub value: Option<Expression>,
-}
-
-#[derive(Debug)]
-#[allow(dead_code)]
-pub struct ClassMethod {
-    pub name: Token,
-    pub parameters: Vec<FunctionParameter>,
-    pub return_type: Option<TypeReference>,
-    pub body: Statement,
+pub enum ClassMember {
+    Field {
+        name: Token,
+        value_type: TypeReference,
+        value: Option<Expression>,
+    },
+    Method {
+        name: Token,
+        parameters: Vec<FunctionParameter>,
+        return_type: Option<TypeReference>,
+        body: Vec<Rc<Statement>>,
+    },
 }

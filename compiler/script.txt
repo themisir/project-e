@@ -1,1 +1,12 @@
-var a:std.num.int.u;
+class App {
+    args: string;
+
+    run(): int {
+        return 0;
+    }
+}
+
+fun main(args: string): int {
+    var app: App = App(args);
+    return app.run();
+}
