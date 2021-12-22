@@ -1,4 +1,4 @@
-use crate::parser::ast::Expression;
+use crate::parser::ast::*;
 use crate::scanner::token::{Literal, Token};
 use crate::TokenType;
 use std::fmt::{Display, Formatter};
@@ -32,8 +32,14 @@ impl Parser {
         Parser { tokens, current: 0 }
     }
 
-    pub fn parse(&mut self) -> Result<Expression, ParserError> {
-        self.expression()
+    pub fn parse(&mut self) -> Result<Statement, ParserError> {
+        let mut declarations: Vec<Rc<Statement>> = Vec::new();
+        while !self.at_end() {
+            let declaration = self.declaration()?;
+            declarations.push(Rc::new(declaration));
+        }
+
+        Ok(Statement::Program { declarations })
     }
 
     fn match_single(&mut self, token_type: TokenType) -> bool {
@@ -79,6 +85,223 @@ impl Parser {
 
     fn previous(&self) -> &Token {
         self.tokens.iter().nth(self.current - 1).unwrap()
+    }
+
+    fn declaration(&mut self) -> Result<Statement, ParserError> {
+        /*
+        - [ ] Class
+        - [x] Var
+        - [x] Function
+        - [x] Statement
+         */
+
+        if self.match_single(TokenType::Var) {
+            return self.var_decl();
+        }
+        if self.match_single(TokenType::Fun) {
+            return self.function_decl();
+        }
+
+        self.statement()
+    }
+
+    fn function_decl(&mut self) -> Result<Statement, ParserError> {
+        let name = self
+            .consume(TokenType::Identifier, "Expect identifier after 'fun'")?
+            .clone();
+
+        self.consume(TokenType::LeftParen, "Expect '(' after function name")?;
+
+        let parameters = self.parameters()?;
+        let return_type = if self.check(TokenType::Colon) {
+            let return_type = self.type_reference()?;
+            Some(return_type)
+        } else {
+            None
+        };
+
+        self.consume(TokenType::LeftBrace, "Expect '{' before function body")?;
+
+        let body = self.block()?;
+
+        Ok(Statement::Function {
+            name,
+            parameters,
+            return_type,
+            body,
+        })
+    }
+
+    fn var_decl(&mut self) -> Result<Statement, ParserError> {
+        let (name, value_type) = self.typed_var()?;
+        let value = if self.match_single(TokenType::Equal) {
+            let value = self.expression()?;
+            Some(value)
+        } else {
+            None
+        };
+
+        self.consume(
+            TokenType::Semicolon,
+            "Expect ';' after variable declaration",
+        )?;
+        Ok(Statement::Var {
+            name,
+            value_type,
+            value,
+        })
+    }
+
+    fn typed_var(&mut self) -> Result<(Token, TypeReference), ParserError> {
+        let name = self
+            .consume(TokenType::Identifier, "Expect identifier after 'var'")?
+            .clone();
+
+        self.consume(TokenType::Colon, "Expect ':' after variable name")?;
+
+        let type_reference = self.type_reference()?;
+
+        Ok((name, type_reference))
+    }
+
+    fn type_reference(&mut self) -> Result<TypeReference, ParserError> {
+        let mut type_name: Option<TypeName> = None;
+        loop {
+            let name = self
+                .consume(TokenType::Identifier, "Expect type identifier")?
+                .clone();
+
+            type_name = Some(match type_name {
+                Some(value) => value.push(name),
+                None => TypeName::new(name),
+            });
+
+            if !self.match_single(TokenType::Dot) {
+                break;
+            }
+        }
+
+        let type_name = type_name.unwrap();
+        Ok(TypeReference { type_name })
+    }
+
+    fn statement(&mut self) -> Result<Statement, ParserError> {
+        /*
+        - [x] Block
+        - [ ] If
+        - [ ] For
+        - [ ] While
+        - [x] Return
+        - [x] Continue
+        - [x] Break
+        - [x] Expression
+         */
+
+        if self.match_single(TokenType::LeftBrace) {
+            return self.block_stmt();
+        }
+        if self.match_single(TokenType::For) {
+            return self.for_stmt();
+        }
+        if self.match_single(TokenType::Return) {
+            return self.return_stmt();
+        }
+        if self.match_single(TokenType::Break) {
+            return self.break_stmt();
+        }
+        if self.match_single(TokenType::Continue) {
+            return self.continue_stmt();
+        }
+
+        self.expression_stmt()
+    }
+
+    fn block_stmt(&mut self) -> Result<Statement, ParserError> {
+        let declarations = self.block()?;
+        Ok(Statement::Block { declarations })
+    }
+
+    fn break_stmt(&mut self) -> Result<Statement, ParserError> {
+        let keyword = self.previous().clone();
+        self.consume(TokenType::Semicolon, "Expect ';' after 'break'")?;
+        Ok(Statement::Break { keyword })
+    }
+
+    fn continue_stmt(&mut self) -> Result<Statement, ParserError> {
+        let keyword = self.previous().clone();
+        self.consume(TokenType::Semicolon, "Expect ';' after 'continue'")?;
+        Ok(Statement::Continue { keyword })
+    }
+
+    fn return_stmt(&mut self) -> Result<Statement, ParserError> {
+        let keyword = self.previous().clone();
+        let value = if self.check(TokenType::Semicolon) {
+            let value = self.expression()?;
+            Some(value)
+        } else {
+            None
+        };
+
+        self.consume(TokenType::Semicolon, "Expect ';' after return value")?;
+        Ok(Statement::Return { keyword, value })
+    }
+
+    fn expression_stmt(&mut self) -> Result<Statement, ParserError> {
+        let expr = self.expression()?;
+        if let Expression::LambdaFunction { .. } = expr {
+        } else {
+            self.consume(TokenType::Semicolon, "Expect ';' after expression")?;
+        }
+
+        Ok(Statement::Expression { expression: expr })
+    }
+
+    fn for_stmt(&mut self) -> Result<Statement, ParserError> {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'for'")?;
+
+        let initializer = if self.match_single(TokenType::Semicolon) {
+            None
+        } else if self.match_single(TokenType::Var) {
+            let stmt = self.var_decl()?;
+            Some(Rc::new(stmt))
+        } else {
+            let stmt = self.expression_stmt()?;
+            Some(Rc::new(stmt))
+        };
+
+        let condition = if self.match_single(TokenType::Semicolon) {
+            None
+        } else {
+            let expr = self.expression()?;
+            Some(expr)
+        };
+
+        let update = if self.match_single(TokenType::Semicolon) {
+            None
+        } else {
+            let expr = self.expression()?;
+            Some(expr)
+        };
+
+        let body = self.statement()?;
+
+        Ok(Statement::For {
+            initializer,
+            condition,
+            update,
+            body: Rc::new(body),
+        })
+    }
+
+    fn block(&mut self) -> Result<Vec<Rc<Statement>>, ParserError> {
+        let mut statements: Vec<Rc<Statement>> = Vec::new();
+        while !self.check(TokenType::RightBrace) && !self.at_end() {
+            let declaration = self.declaration()?;
+            statements.push(Rc::new(declaration));
+        }
+
+        self.consume(TokenType::RightBrace, "Expect '}' after block")?;
+        Ok(statements)
     }
 
     fn expression(&mut self) -> Result<Expression, ParserError> {
@@ -317,6 +540,42 @@ impl Parser {
         })
     }
 
+    fn parameters(&mut self) -> Result<Vec<FunctionParameter>, ParserError> {
+        let mut parameters: Vec<FunctionParameter> = Vec::new();
+        while !self.at_end() && !self.check(TokenType::RightParen) {
+            let (name, value_type) = self.typed_var()?;
+            parameters.push(FunctionParameter { name, value_type });
+        }
+        self.consume(TokenType::RightParen, "Expect ')' after parameter list")?;
+
+        Ok(parameters)
+    }
+
+    fn lambda(&mut self) -> Result<Expression, ParserError> {
+        let keyword = self.previous().clone();
+
+        self.consume(TokenType::LeftParen, "Expect '(' after function name")?;
+
+        let parameters = self.parameters()?;
+        let return_type = if self.check(TokenType::Colon) {
+            let return_type = self.type_reference()?;
+            Some(return_type)
+        } else {
+            None
+        };
+
+        self.consume(TokenType::LeftBrace, "Expect '{' before function body")?;
+
+        let body = self.block()?;
+
+        Ok(Expression::LambdaFunction {
+            keyword,
+            parameters,
+            return_type,
+            body,
+        })
+    }
+
     fn primary(&mut self) -> Result<Expression, ParserError> {
         // "false"
         if self.match_single(TokenType::False) {
@@ -348,6 +607,11 @@ impl Parser {
             return Ok(Expression::Super {
                 keyword: self.previous().clone(),
             });
+        }
+
+        // "fun" function
+        if self.match_single(TokenType::Fun) {
+            return self.lambda();
         }
 
         // NUMBER | STRING

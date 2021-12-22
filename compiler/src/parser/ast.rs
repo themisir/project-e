@@ -8,21 +8,50 @@ pub enum Expression {
         operator: Token,
         right: Rc<Expression>,
     },
-    Logical {
-        left: Rc<Expression>,
-        operator: Token,
-        right: Rc<Expression>,
-    },
     Binary {
         left: Rc<Expression>,
         operator: Token,
         right: Rc<Expression>,
     },
+    Call {
+        callee: Rc<Expression>,
+        arguments: Vec<Rc<Expression>>,
+        paren: Token,
+    },
     Grouping {
         expression: Rc<Expression>,
     },
+    Identifier {
+        name: Token,
+    },
+    Index {
+        object: Rc<Expression>,
+        index: Rc<Expression>,
+        paren: Token,
+    },
+    LambdaFunction {
+        keyword: Token,
+        parameters: Vec<FunctionParameter>,
+        return_type: Option<TypeReference>,
+        body: Vec<Rc<Statement>>,
+    },
     Literal {
         value: Literal,
+    },
+    Logical {
+        left: Rc<Expression>,
+        operator: Token,
+        right: Rc<Expression>,
+    },
+    Member {
+        object: Rc<Expression>,
+        name: Token,
+    },
+    Super {
+        keyword: Token,
+    },
+    This {
+        keyword: Token,
     },
     Unary {
         operator: Token,
@@ -33,56 +62,13 @@ pub enum Expression {
         prefix: bool,
         expression: Rc<Expression>,
     },
-    Identifier {
-        name: Token,
-    },
-    This {
-        keyword: Token,
-    },
-    Super {
-        keyword: Token,
-    },
-    Call {
-        callee: Rc<Expression>,
-        arguments: Vec<Rc<Expression>>,
-        paren: Token,
-    },
-    Member {
-        object: Rc<Expression>,
-        name: Token,
-    },
-    Index {
-        object: Rc<Expression>,
-        index: Rc<Expression>,
-        paren: Token,
-    },
 }
 
 #[derive(Debug)]
 #[allow(dead_code)]
 pub enum Statement {
     Block {
-        declarations: Vec<Declaration>,
-    },
-    Expression {
-        expression: Expression,
-    },
-    For {
-        init: Option<Expression>,
-        condition: Option<Expression>,
-        update: Option<Expression>,
-    },
-    If {
-        condition: Expression,
-        then_branch: Rc<Statement>,
-        else_branch: Option<Rc<Statement>>,
-    },
-    Return {
-        value: Expression,
-    },
-    While {
-        condition: Expression,
-        body: Rc<Statement>,
+        declarations: Vec<Rc<Statement>>,
     },
     Break {
         keyword: Token,
@@ -90,57 +76,93 @@ pub enum Statement {
     Continue {
         keyword: Token,
     },
-}
-
-#[derive(Debug)]
-#[allow(dead_code)]
-pub enum Declaration {
     Class {
         name: Token,
-        extends_type: Option<TypeName>,
+        extends_type: Option<TypeReference>,
         fields: Vec<ClassField>,
         methods: Vec<ClassMethod>,
+    },
+    Expression {
+        expression: Expression,
+    },
+    For {
+        initializer: Option<Rc<Statement>>,
+        condition: Option<Expression>,
+        update: Option<Expression>,
+        body: Rc<Statement>,
     },
     Function {
         name: Token,
         parameters: Vec<FunctionParameter>,
-        return_type: Option<TypeName>,
-        body: Statement,
+        return_type: Option<TypeReference>,
+        body: Vec<Rc<Statement>>,
+    },
+    If {
+        condition: Expression,
+        then_branch: Rc<Statement>,
+        else_branch: Option<Rc<Statement>>,
+    },
+    Program {
+        declarations: Vec<Rc<Statement>>,
+    },
+    Return {
+        keyword: Token,
+        value: Option<Expression>,
     },
     Var {
         name: Token,
-        value: Expression,
-        value_type: TypeName,
+        value: Option<Expression>,
+        value_type: TypeReference,
     },
-    Statement {
-        statement: Statement,
+    While {
+        condition: Expression,
+        body: Rc<Statement>,
     },
 }
 
-#[derive(Debug)]
-#[allow(dead_code)]
-pub struct TypeName(Vec<Token>);
+#[derive(Debug, Clone)]
+pub enum TypeName {
+    Identifier { name: Token },
+    QualifiedName { left: Rc<TypeName>, right: Token },
+}
 
 #[derive(Debug)]
-#[allow(dead_code)]
+pub struct TypeReference {
+    pub type_name: TypeName,
+}
+
+impl TypeName {
+    pub fn new(name: Token) -> Self {
+        TypeName::Identifier { name }
+    }
+
+    pub fn push(&self, name: Token) -> Self {
+        TypeName::QualifiedName {
+            left: Rc::new(self.clone()),
+            right: name,
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct FunctionParameter {
-    name: Token,
-    value_type: TypeName,
+    pub name: Token,
+    pub value_type: TypeReference,
 }
 
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct ClassField {
-    name: Token,
-    value_type: TypeName,
-    value: Option<Expression>,
+    pub name: Token,
+    pub value_type: TypeReference,
+    pub value: Option<Expression>,
 }
 
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct ClassMethod {
-    name: Token,
-    parameters: Vec<FunctionParameter>,
-    return_type: Option<TypeName>,
-    body: Statement,
+    pub name: Token,
+    pub parameters: Vec<FunctionParameter>,
+    pub return_type: Option<TypeReference>,
+    pub body: Statement,
 }

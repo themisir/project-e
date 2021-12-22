@@ -27,7 +27,6 @@ impl Token {
 }
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
-#[allow(dead_code)]
 pub enum TokenType {
     // Single-character tokens.
     LeftParen = 1,
@@ -69,7 +68,9 @@ pub enum TokenType {
 
     // Keywords.
     And,
+    Break,
     Class,
+    Continue,
     Else,
     False,
     Fun,
@@ -89,7 +90,9 @@ pub enum TokenType {
 
 pub(crate) static KEYWORDS: phf::Map<&'static str, TokenType> = phf_map! {
     "and" => TokenType::And,
+    "break" => TokenType::Break,
     "class" => TokenType::Class,
+    "continue" => TokenType::Continue,
     "else" => TokenType::Else,
     "false" => TokenType::False,
     "fun" => TokenType::Fun,
