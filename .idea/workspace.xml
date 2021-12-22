@@ -7,12 +7,9 @@
     <cargoProject FILE="$PROJECT_DIR$/compiler/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="267a45ed-1a8b-4bc4-a766-3519b63e2962" name="Changes" comment="workspace.xml updated, but I don't know why, who knows ¯\_(ツ)_/¯">
+    <list default="true" id="267a45ed-1a8b-4bc4-a766-3519b63e2962" name="Changes" comment="Implemented all the remaining bits of parser">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/script.txt" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/script.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/parser/ast.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/parser/ast.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/parser/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/parser/parser.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/scanner/token.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/scanner/token.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -101,7 +98,7 @@
       <updated>1640036990569</updated>
       <workItem from="1640036992811" duration="11945000" />
       <workItem from="1640095301725" duration="22750000" />
-      <workItem from="1640187245360" duration="9242000" />
+      <workItem from="1640187245360" duration="10441000" />
     </task>
     <task id="LOCAL-00001" summary="Implemented simple parser">
       <created>1640093030738</created>
@@ -166,7 +163,14 @@
       <option name="project" value="LOCAL" />
       <updated>1640205306112</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Implemented all the remaining bits of parser">
+      <created>1640208794825</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1640208794825</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -193,7 +197,8 @@
     <MESSAGE value="Create AST nodes for statement and declarations" />
     <MESSAGE value="Implement AST nodes for some statements inc: for, function" />
     <MESSAGE value="workspace.xml updated, but I don't know why, who knows ¯\_(ツ)_/¯" />
-    <option name="LAST_COMMIT_MESSAGE" value="workspace.xml updated, but I don't know why, who knows ¯\_(ツ)_/¯" />
+    <MESSAGE value="Implemented all the remaining bits of parser" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented all the remaining bits of parser" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
