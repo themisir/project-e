@@ -4,9 +4,9 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub enum Expression {
     Assignment {
-        name: Token,
+        left: Rc<Expression>,
         operator: Token,
-        value: Rc<Expression>,
+        right: Rc<Expression>,
     },
     Logical {
         left: Rc<Expression>,

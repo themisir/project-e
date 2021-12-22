@@ -9,7 +9,7 @@ mod scanner;
 
 fn main() {
     let source = fs::read_to_string("script.txt").unwrap();
-    let mut scanner = Scanner::new(String::from(source));
+    let mut scanner = Scanner::new(source.clone());
 
     match scanner.scan_all() {
         Ok(tokens) => {
@@ -17,11 +17,15 @@ fn main() {
 
             match parser.parse() {
                 Ok(expr) => println!("{:#?}", expr),
-                Err(e) => println!("parse error: {}", e),
+                Err(e) => {
+                    eprintln!("parse error: {}", e);
+                    e.token.range().print_source(source.as_str());
+                }
             }
         }
         Err(e) => {
-            println!("scan error: {}", e);
+            eprintln!("scan error: {}", e);
+            e.range().print_source(source.as_str());
         }
     }
 }

@@ -7,13 +7,18 @@ declaration    → classDecl
                | funDecl
                | varDecl
                | statement ;
+               
+varDecl        → "var" typedVar ( "=" expression )? ";" ;
+typedVar       → IDENTIFIER ":" type ;
+type           → IDENTIFIER ( "." IDENTIFIER )* ;
 
-classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
-                 "{" function* "}" ;
+classDecl      → "class" IDENTIFIER ( "extends" type )?
+                 "{" ( function | property )* "}" ;
+field          → typedVar ";" ;
 
 funDecl        → "fun" function ;
-function       → IDENTIFIER "(" parameters? ")" block ;
-parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
+function       → IDENTIFIER "(" parameters? ")" ( ":" type )? block ;
+parameters     → typedVar ( "," typedVar )* ;
 
 statement      → exprStmt
                | forStmt
@@ -42,10 +47,6 @@ ifStmt         → "if" "(" expression ")" statement
 block          → "{" declaration* "}" ;
 
 exprStmt       → expression ";" ;
-
-printStmt      → "print" expression ";" ;
-
-varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 
 expression     → assignment ;
 assignment     → ( call "." )? IDENTIFIER "=" assignment

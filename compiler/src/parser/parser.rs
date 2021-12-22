@@ -11,8 +11,8 @@ pub struct Parser {
 
 #[derive(Debug)]
 pub struct ParserError {
-    message: &'static str,
-    token: Token,
+    pub message: &'static str,
+    pub token: Token,
 }
 
 impl Display for ParserError {
@@ -86,7 +86,31 @@ impl Parser {
     }
 
     fn assignment(&mut self) -> Result<Expression, ParserError> {
-        self.or()
+        let expr = self.or()?;
+
+        if self.match_any(&[
+            TokenType::Equal,
+            TokenType::MinusEqual,
+            TokenType::PlusEqual,
+            TokenType::SlashEqual,
+            TokenType::StarEqual,
+        ]) {
+            let operator = self.previous().clone();
+            let right = self.assignment()?;
+
+            match expr {
+                Expression::Member { .. }
+                | Expression::Index { .. }
+                | Expression::Identifier { .. } => Ok(Expression::Assignment {
+                    operator,
+                    left: Rc::new(expr),
+                    right: Rc::new(right),
+                }),
+                _ => Err(self.error(&operator, "Invalid assignment target")),
+            }
+        } else {
+            Ok(expr)
+        }
     }
 
     fn or(&mut self) -> Result<Expression, ParserError> {
@@ -372,6 +396,7 @@ impl Parser {
         }
     }
 
+    #[allow(dead_code)]
     fn synchronize(&mut self) {
         self.advance();
 

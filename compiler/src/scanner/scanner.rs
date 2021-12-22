@@ -1,3 +1,4 @@
+use crate::scanner::pos::{Pos, PosRange};
 use crate::scanner::token::*;
 use std::borrow::Borrow;
 use std::fmt::{Display, Formatter};
@@ -13,9 +14,15 @@ pub struct Scanner {
 
 #[derive(Debug)]
 pub struct ScannerError {
-    message: &'static str,
-    start_pos: Pos,
-    end_pos: Pos,
+    pub message: &'static str,
+    pub start_pos: Pos,
+    pub end_pos: Pos,
+}
+
+impl ScannerError {
+    pub fn range(&self) -> PosRange {
+        PosRange(self.start_pos, self.end_pos)
+    }
 }
 
 impl Display for ScannerError {
@@ -24,7 +31,7 @@ impl Display for ScannerError {
             f,
             "{} at {}",
             self.message,
-            Range(self.start_pos, self.end_pos),
+            PosRange(self.start_pos, self.end_pos),
         )
     }
 }

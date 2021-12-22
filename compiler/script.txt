@@ -1,1 +1,1 @@
-super.prop[++i](arg)[i++].p2++
+a[2]++;

@@ -1,57 +1,5 @@
+use crate::scanner::pos::*;
 use phf::phf_map;
-use std::fmt::{Display, Formatter};
-
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub struct Pos {
-    pub row: u16,
-    pub col: u16,
-    pub index: u16,
-}
-
-impl Pos {
-    pub(crate) fn initial() -> Pos {
-        Pos {
-            row: 1,
-            col: 1,
-            index: 0,
-        }
-    }
-
-    pub(crate) fn inc_col(&mut self) {
-        self.index += 1;
-        self.col += 1;
-    }
-
-    pub(crate) fn inc_row(&mut self) {
-        self.index += 1;
-        self.col = 0;
-        self.row += 1;
-    }
-}
-
-pub struct Range(pub(crate) Pos, pub(crate) Pos);
-
-impl Display for Pos {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "line {}, column {}", self.row, self.col)
-    }
-}
-
-impl Display for Range {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        if self.0 == self.1 {
-            write!(f, "{}", self.0)
-        } else if self.0.row == self.1.row {
-            write!(
-                f,
-                "line {} column {}..{}",
-                self.0.row, self.0.col, self.1.col
-            )
-        } else {
-            write!(f, "{} .. {}", self.0, self.1)
-        }
-    }
-}
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -73,8 +21,8 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn range(&self) -> Range {
-        Range(self.start_pos, self.end_pos)
+    pub fn range(&self) -> PosRange {
+        PosRange(self.start_pos, self.end_pos)
     }
 }
 
