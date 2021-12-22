@@ -30,3 +30,4 @@ for more details regarding this project.
   - [ ] Function
   - [ ] Array (_native array support for creating collection types_)
   - [ ] Generic type arguments
+  - [ ] Implicit type system
