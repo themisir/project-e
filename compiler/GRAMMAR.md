@@ -14,7 +14,7 @@ type           → IDENTIFIER ( "." IDENTIFIER )* ;
 
 classDecl      → "class" IDENTIFIER ( "extends" type )?
                  "{" ( function | property )* "}" ;
-field          → typedVar ";" ;
+field          → typedVar ";" ( "=" expression )? ;
 
 funDecl        → "fun" function ;
 function       → IDENTIFIER "(" parameters? ")" ( ":" type )? block ;
@@ -23,7 +23,6 @@ parameters     → typedVar ( "," typedVar )* ;
 statement      → exprStmt
                | forStmt
                | ifStmt
-               | printStmt
                | returnStmt
                | whileStmt
                | breakStmt

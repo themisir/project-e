@@ -7,17 +7,10 @@
     <cargoProject FILE="$PROJECT_DIR$/compiler/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="267a45ed-1a8b-4bc4-a766-3519b63e2962" name="Changes" comment="Update workspace settings">
-      <change afterPath="$PROJECT_DIR$/compiler/src/scanner/pos.rs" afterDir="false" />
+    <list default="true" id="267a45ed-1a8b-4bc4-a766-3519b63e2962" name="Changes" comment="A bunch of minor nits">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/compiler/GRAMMAR.md" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/GRAMMAR.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/script.txt" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/script.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/main.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/compiler/src/parser/ast.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/parser/ast.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/parser/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/parser/parser.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/scanner/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/scanner/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/scanner/scanner.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/scanner/scanner.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/scanner/token.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/scanner/token.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,7 +97,7 @@
       <option name="presentableId" value="Default" />
       <updated>1640036990569</updated>
       <workItem from="1640036992811" duration="11945000" />
-      <workItem from="1640095301725" duration="13916000" />
+      <workItem from="1640095301725" duration="15107000" />
     </task>
     <task id="LOCAL-00001" summary="Implemented simple parser">
       <created>1640093030738</created>
@@ -141,7 +134,14 @@
       <option name="project" value="LOCAL" />
       <updated>1640115776200</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="A bunch of minor nits">
+      <created>1640133550444</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1640133550444</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -164,7 +164,8 @@
     <MESSAGE value="Added support for Update expressions&#10;&#10;Adds support for update (++/--)" />
     <MESSAGE value="I can parse &quot;super.prop[++i](arg)[i++].p2++&quot;!" />
     <MESSAGE value="Update workspace settings" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update workspace settings" />
+    <MESSAGE value="A bunch of minor nits" />
+    <option name="LAST_COMMIT_MESSAGE" value="A bunch of minor nits" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
