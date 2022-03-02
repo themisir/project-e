@@ -1,6 +1,5 @@
-use crate::parser::parser::Parser;
-use crate::scanner::scanner::Scanner;
-use crate::scanner::token::TokenType;
+use crate::parser::Parser;
+use crate::scanner::{token::TokenType, Scanner};
 
 use std::fs;
 
